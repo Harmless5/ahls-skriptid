@@ -1,15 +1,16 @@
 #!/bin/bash
+# Skript, mis kontrollib, kas apache2 on installeeritud. Kui ei ole, siis installib selle.
 
-# Define the service name
+# Teenuse nimi
 SERVICE_NAME="apache2"
 
-# Check if the service is installed
+# Kontrollime, kas teenus on installeeritud
 if ! dpkg -s $SERVICE_NAME >/dev/null 2>&1; then
-    # Install the service if it's not installed
+    # Installime teenuse
     sudo apt-get update
     sudo apt-get install -y $SERVICE_NAME
     echo "$SERVICE_NAME installed successfully"
 else
-    # Display the status of the service if it's already installed
+    # Näitame teenuse olekut
     sudo systemctl status $SERVICE_NAME
 fi
