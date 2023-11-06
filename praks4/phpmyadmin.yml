@@ -1,0 +1,25 @@
+---
+- hosts: webservers
+  become: yes
+  become_user: root
+  tasks:
+    - name: Värskenda apt cache
+      apt:
+        update_cache: yes
+
+    - name: Installeeri vajalikud paketid
+      apt:
+        name: ['phpmyadmin', 'php-mbstring', 'libapache2-mod-php', 'php-common', 'php-phpseclib', 'php-mysql']
+        state: present
+
+    - name: Luba mbstring extension
+      command: phpenmod mbstring
+
+    - name: Installeerimine PMA
+      unarchive:
+       src: https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz
+       dest: /var/www/html/
+       remote_src: yes
+
+    - name: Muudame phpmyadmin lehe nime
+      command: mv /var/www/html/phpMyAdmin-5.2.1-all-languages /var/www/html/phpmyadmin

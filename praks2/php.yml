@@ -1,0 +1,16 @@
+---
+- hosts: webservers
+  become: yes
+  become_user: root
+  tasks:
+    - name: installeerime php7.4
+      apt: name=php state=latest
+    - name: install libapache2-mod-php7.4
+      apt: name=libapache2-mod-php7.4 state=latest
+    - name: install php7.4-mysql
+      apt: name=php-mysql update_cache=yes state=latest
+
+    - name: Alglaadimine Apache2
+      service:
+        name: apache2
+        state: restarted

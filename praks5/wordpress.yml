@@ -1,0 +1,52 @@
+---
+- hosts: webservers
+  become: yes
+  become_user: root
+  tasks:
+    - name: Install python3
+      apt: name=python3-pymysql
+
+    - name: Teeme uue andmebaasi
+      mysql_db:
+        name: "wpdatabase"
+        state: present
+
+    - name: Loome kasutaja
+      mysql_user:
+        name: "wpuser"
+        password: "qwerty"
+        priv: "wpdatabase.*:ALL,GRANT"
+        state: present
+        check_implicit_admin: yes
+
+    - name: paigaldame Wordpressi
+      unarchive:
+        src: https://wordpress.org/latest.tar.gz
+        dest: /var/www/html/
+        remote_src: yes
+
+    - name: määrame  kausta 'wordpress' omaniku ja grupi 'www-data'
+      file:
+        path: /var/www/html/wordpress/
+        state: directory
+        recurse: yes
+        owner: www-data
+        group: www-data
+
+    - name: Kopeerime konf faili
+      command: cp /var/www/html/wordpress/wp-config-sample.php /var/www/html/wordpress/wp-config.php
+
+    - name: Muudame 'DB_PASSWORD' wordpress konf failis
+      lineinfile: dest=/var/www/html/wordpress/wp-config.php regexp="password_here'" line="define('DB_PASSWORD', 'qwerty' );"
+
+    - name: Muudame 'DB_USER' wordpress konf failis
+      lineinfile: dest=/var/www/html/wordpress/wp-config.php regexp="username_here" line="define('DB_USER', 'wpuser' );"
+
+    - name: Muudame 'DB_NAME' wordpress konf failis
+      lineinfile: dest=/var/www/html/wordpress/wp-config.php regexp="database_name_here" line="define('DB_NAME', 'wpdatabase' );"
+
+    - name: Taaskäivitame mysql
+      service: name=mysql state=restarted
+
+    - name: Taaskäivitame apache2
+      service: name=apache2 state=restarted

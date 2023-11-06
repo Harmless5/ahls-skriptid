@@ -1,0 +1,51 @@
+---
+- hosts: webservers
+  become_user: root
+  become: yes
+  tasks:
+    - name: Install software-properties-common
+      apt: name=software-properties-common state=present
+
+    - name: mysql
+      apt:
+        name: python3-pymysql
+        update_cache: yes
+        state: latest
+
+    - name: Laen alla mysql_0.8.26 repositooriumi
+      get_url:
+        url: https://repo.mysql.com/mysql-apt-config_0.8.26-1_all.deb
+        dest: "/tmp"
+        mode: 0440
+
+    - name: Paigaldan mysql_0.8.26 repositooriumi
+      apt: "deb=/tmp/mysql-apt-config_0.8.26-1_all.deb"
+
+    - name: Install MySQL server
+      apt: name=mysql-server state=present
+
+    - name: Loome MySQL root login faili
+      copy:
+        dest: /root/.my.cnf
+        owner: root
+        group: root
+        content: |
+          [client]
+          user=root
+          password=qwerty
+        mode: 0600
+
+    - name: Loome MySQL root user
+      mysql_user:
+        login_user: root
+        login_password: qwerty
+        name: root
+        password: qwerty
+        priv: '*.*:ALL,GRANT'
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Restart MySQL service
+      service:
+        name: mysql
+        state: restarted
